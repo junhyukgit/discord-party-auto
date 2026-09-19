@@ -47,6 +47,9 @@ jobs:
 
           MODE = os.environ.get("MODE", "production")
 
+          # 임베드 색상
+          EMBED_COLOR = 0xF28C8C
+
           # ==============================
           # 다음 날 계산
           # ==============================
@@ -90,16 +93,17 @@ jobs:
 
                   thread_name = "[개발테스트] " + thread_name
 
-                  content = (
-                      f"**{thread_name}**\n\n"
-                      f"{description}"
-                  )
+                  content = ""
+
+                  embed_title = thread_name
+
+                  embed_description = description
 
                   print("")
                   print("테스트 게시:")
                   print("포럼 제목 :", thread_name)
                   print("내용 :")
-                  print(content)
+                  print(description)
 
                   allowed_mentions = {
                       "roles": []
@@ -111,14 +115,25 @@ jobs:
 
               else:
 
-                  content = (
-                      f"<@&{ROLE_ID}>\n\n"
-                      f"{description}"
-                  )
+                  content = f"<@&{ROLE_ID}>"
+
+                  embed_title = title
+
+                  embed_description = description
 
                   allowed_mentions = {
                       "roles": [ROLE_ID]
                   }
+
+              # ==============================
+              # Embed 생성
+              # ==============================
+
+              embed = {
+                  "title": embed_title,
+                  "description": embed_description,
+                  "color": EMBED_COLOR
+              }
 
               # ==============================
               # Discord Webhook 데이터
@@ -127,6 +142,7 @@ jobs:
               payload = {
                   "content": content,
                   "thread_name": thread_name,
+                  "embeds": [embed],
                   "allowed_mentions": allowed_mentions
               }
 
@@ -171,7 +187,10 @@ jobs:
                       "Discord Webhook 요청에 실패했습니다."
                   )
 
+              # ==============================
               # HTTP 상태 코드 확인
+              # ==============================
+
               response_lines = result.stdout.strip().splitlines()
 
               status_line = response_lines[-1]
