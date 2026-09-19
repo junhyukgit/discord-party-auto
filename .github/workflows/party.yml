@@ -80,7 +80,7 @@ jobs:
 
               if MODE == "test":
 
-                  title = "[테스트] " + title
+                  title = "[개발 테스트] " + title
 
                   content = (
                       f"**{title}**\n\n"
