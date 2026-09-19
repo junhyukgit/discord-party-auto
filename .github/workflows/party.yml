@@ -35,6 +35,7 @@ jobs:
           from datetime import datetime, timedelta
           from zoneinfo import ZoneInfo
 
+
           # ==============================
           # 기본 설정
           # ==============================
@@ -47,8 +48,9 @@ jobs:
 
           MODE = os.environ.get("MODE", "production")
 
-          # 임베드 색상
+          # Embed 색상
           EMBED_COLOR = 0xF28C8C
+
 
           # ==============================
           # 다음 날 계산
@@ -76,6 +78,7 @@ jobs:
           print("다음 날짜 :", date_text)
           print("실행 모드 :", MODE)
 
+
           # ==============================
           # 메시지 전송 함수
           # ==============================
@@ -85,39 +88,38 @@ jobs:
               # 포럼 게시글 제목
               thread_name = title
 
-              # ------------------------------
+
+              # ==============================
               # 테스트 모드
-              # ------------------------------
+              # ==============================
 
               if MODE == "test":
 
                   thread_name = "[개발테스트] " + thread_name
 
+                  # 테스트에서는 멘션하지 않음
                   content = ""
 
-                  embed_title = thread_name
-
                   embed_description = description
-
-                  print("")
-                  print("테스트 게시:")
-                  print("포럼 제목 :", thread_name)
-                  print("내용 :")
-                  print(description)
 
                   allowed_mentions = {
                       "roles": []
                   }
 
-              # ------------------------------
+                  print("")
+                  print("테스트 게시:")
+                  print("포럼 제목 :", thread_name)
+                  print("내용 :", description)
+
+
+              # ==============================
               # 실제 운영 모드
-              # ------------------------------
+              # ==============================
 
               else:
 
+                  # 길드원 역할 멘션
                   content = f"<@&{ROLE_ID}>"
-
-                  embed_title = title
 
                   embed_description = description
 
@@ -125,15 +127,20 @@ jobs:
                       "roles": [ROLE_ID]
                   }
 
+
               # ==============================
               # Embed 생성
               # ==============================
+              #
+              # 제목은 포럼 게시글 제목에만 표시
+              # Embed에는 내용만 표시
+              #
 
               embed = {
-                  "title": embed_title,
                   "description": embed_description,
                   "color": EMBED_COLOR
               }
+
 
               # ==============================
               # Discord Webhook 데이터
@@ -150,6 +157,7 @@ jobs:
                   payload,
                   ensure_ascii=False
               )
+
 
               # ==============================
               # curl로 Discord 전송
@@ -173,9 +181,15 @@ jobs:
                   text=True
               )
 
+
               print("")
               print("Discord 응답:")
               print(result.stdout)
+
+
+              # ==============================
+              # curl 실행 오류
+              # ==============================
 
               if result.returncode != 0:
 
@@ -187,6 +201,7 @@ jobs:
                       "Discord Webhook 요청에 실패했습니다."
                   )
 
+
               # ==============================
               # HTTP 상태 코드 확인
               # ==============================
@@ -194,6 +209,10 @@ jobs:
               response_lines = result.stdout.strip().splitlines()
 
               status_line = response_lines[-1]
+
+              print("")
+              print("HTTP 상태 :", status_line)
+
 
               if not status_line.startswith("HTTP_STATUS:200"):
 
@@ -205,7 +224,9 @@ jobs:
                       "Discord가 Webhook 요청을 거부했습니다."
                   )
 
+
               print("Discord 게시 성공")
+
 
           # ==============================
           # 월 ~ 수
@@ -218,24 +239,33 @@ jobs:
                   "3-5인 출발합니다."
               )
 
+
           # ==============================
           # 목 ~ 일
           # ==============================
 
           else:
 
+              # ------------------------------
               # 1번 모집
+              # ------------------------------
+
               send_message(
                   f"{date_text} 브리레흐 1-3관 21시",
                   "3-5인 출발합니다."
               )
 
+
+              # ------------------------------
               # 2번 모집
+              # ------------------------------
+
               send_message(
                   f"{date_text} 브리레흐 1-3관 정규 후 연릴",
                   "3-5인 출발 합니다.\n"
                   "18:00까지 인원 미달시 취소 예정입니다."
               )
+
 
           print("")
           print("모든 작업 완료")
