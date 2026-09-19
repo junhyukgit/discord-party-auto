@@ -60,6 +60,29 @@ jobs:
 
           tomorrow = now + timedelta(days=1)
 
+          # ==============================
+          # 모집글 휴무일 설정
+          # ==============================
+          
+          SKIP_DATES = [
+              "2026-09-28",
+              "2026-09-29",
+              "2026-09-30"
+          ]
+          
+          target_date = tomorrow.strftime("%Y-%m-%d")
+          
+          if MODE == "production" and target_date in SKIP_DATES:
+          
+              print("")
+              print("================================")
+              print("추석 연휴 기간")
+              print("게시 대상 날짜 :", target_date)
+              print("자동 모집글을 게시하지 않습니다.")
+              print("================================")
+          
+              raise SystemExit(0)
+          
           weekdays = [
               "월",
               "화",
