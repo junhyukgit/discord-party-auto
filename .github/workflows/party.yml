@@ -25,6 +25,7 @@ jobs:
         env:
           WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           MODE: ${{ inputs.mode || 'production' }}
+
         run: |
           python3 <<'PY'
 
@@ -79,32 +80,46 @@ jobs:
 
           def send_message(title, description):
 
+              # 포럼 게시글 제목
+              thread_name = title
+
+              # 테스트 모드
               if MODE == "test":
 
-                  title = "[개발 테스트] " + title
+                  thread_name = "[개발테스트] " + thread_name
 
                   content = (
-                      f"**{title}**\n\n"
+                      f"**{thread_name}**\n\n"
                       f"{description}"
                   )
 
                   print("테스트 게시:")
+                  print("포럼 제목 :", thread_name)
+                  print("내용 :")
                   print(content)
 
+              # 실제 운영 모드
               else:
 
                   content = (
                       f"<@&{ROLE_ID}>\n\n"
-                      f"**{title}**\n\n"
                       f"{description}"
                   )
+
+              # ==============================
+              # Discord Webhook 데이터
+              # ==============================
 
               data = json.dumps({
                   "content": content,
 
+                  # 포럼 채널이므로 thread_name 필수
+                  "thread_name": thread_name,
+
                   "allowed_mentions": {
                       "roles": [] if MODE == "test" else [ROLE_ID]
                   }
+
               }).encode("utf-8")
 
               request = urllib.request.Request(
@@ -117,7 +132,7 @@ jobs:
               )
 
               # ==============================
-              # Discord 전송 및 오류 확인
+              # Discord 전송
               # ==============================
 
               try:
@@ -128,6 +143,12 @@ jobs:
                           "Discord 응답:",
                           response.status
                       )
+
+                      response_body = response.read().decode("utf-8")
+
+                      if response_body:
+                          print("Discord 응답 내용:")
+                          print(response_body)
 
               except urllib.error.HTTPError as e:
 
@@ -155,39 +176,37 @@ jobs:
                   raise
 
           # ==============================
-          # 월~수
+          # 월 ~ 수
           # ==============================
 
           if tomorrow.weekday() in [0, 1, 2]:
 
               send_message(
-
                   f"{date_text} 브리레흐 1-3관 21시",
-
                   "3-5인 출발합니다."
               )
 
           # ==============================
-          # 목~일
+          # 목 ~ 일
           # ==============================
 
           else:
 
+              # ------------------------------
               # 1번 모집
+              # ------------------------------
 
               send_message(
-
                   f"{date_text} 브리레흐 1-3관 21시",
-
                   "3-5인 출발합니다."
               )
 
+              # ------------------------------
               # 2번 모집
+              # ------------------------------
 
               send_message(
-
                   f"{date_text} 브리레흐 1-3관 정규 후 연릴",
-
                   "3-5인 출발 합니다.\n"
                   "18:00까지 인원 미달시 취소 예정입니다."
               )
