@@ -31,6 +31,7 @@ jobs:
           import os
           import json
           import urllib.request
+          import urllib.error
           from datetime import datetime, timedelta
           from zoneinfo import ZoneInfo
 
@@ -115,12 +116,43 @@ jobs:
                   method="POST"
               )
 
-              with urllib.request.urlopen(request) as response:
+              # ==============================
+              # Discord 전송 및 오류 확인
+              # ==============================
 
-                  print(
-                      "Discord 응답:",
-                      response.status
-                  )
+              try:
+
+                  with urllib.request.urlopen(request) as response:
+
+                      print(
+                          "Discord 응답:",
+                          response.status
+                      )
+
+              except urllib.error.HTTPError as e:
+
+                  print("")
+                  print("================================")
+                  print("Discord HTTP 오류 발생")
+                  print("HTTP 상태 코드 :", e.code)
+                  print("오류 메시지 :", e.reason)
+                  print("================================")
+
+                  try:
+
+                      error_body = e.read().decode("utf-8")
+
+                      print("Discord 오류 내용:")
+                      print(error_body)
+
+                  except Exception:
+
+                      print("Discord 오류 내용을 읽을 수 없습니다.")
+
+                  print("================================")
+                  print("")
+
+                  raise
 
           # ==============================
           # 월~수
