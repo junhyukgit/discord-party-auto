@@ -2,8 +2,7 @@ name: 마비노기 파티 모집 자동 게시
 
 on:
   schedule:
-    - cron: '3 21 * * *'
-      timezone: 'Asia/Seoul'
+    - cron: '3 12 * * *'
 
   workflow_dispatch:
     inputs:
