@@ -236,8 +236,17 @@ jobs:
               print("HTTP 상태 :", status_line)
 
 
-              if not status_line.startswith("HTTP_STATUS:200"):
-
+              if "HTTP_STATUS:204" in status_line:
+                  print("Discord 게시 성공")
+              
+              elif "HTTP_STATUS:200" in status_line:
+                  print("Discord 게시 성공")
+              
+              else:
+                  raise RuntimeError(
+                      "Discord가 Webhook 요청을 거부했습니다."
+                  )
+                  
                   print("")
                   print("Discord HTTP 오류:")
                   print(status_line)
