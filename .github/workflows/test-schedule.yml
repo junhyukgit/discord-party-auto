@@ -9,8 +9,5 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Test
-        run: echo "Schedule OK"
-# test
+      - run: echo "Schedule OK"
