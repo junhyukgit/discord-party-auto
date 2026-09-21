@@ -2,7 +2,7 @@ name: 마비노기 파티 모집 자동 게시
 
 on:
   schedule:
-    - cron: '3 12 * * *'
+    - cron: '*/5 * * * *'
 
   workflow_dispatch:
     inputs:
@@ -302,3 +302,4 @@ jobs:
           print("모든 작업 완료")
 
           PY
+# schedule refresh
