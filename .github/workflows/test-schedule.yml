@@ -1,13 +1,14 @@
 name: Schedule Test
 
 on:
-  push:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Schedule OK"
+      - run: |
+          echo "Schedule OK"
+          echo "UTC: $(date -u)"
