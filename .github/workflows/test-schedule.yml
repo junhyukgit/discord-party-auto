@@ -3,12 +3,18 @@ name: Schedule Test
 on:
   schedule:
     - cron: '7,22,37,52 * * * *'
+      timezone: 'Asia/Seoul'
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - run: |
+      - name: Schedule Test
+        run: |
+          echo "===================="
           echo "Schedule OK"
           echo "UTC: $(date -u)"
+          echo "KST: $(TZ=Asia/Seoul date)"
+          echo "===================="
