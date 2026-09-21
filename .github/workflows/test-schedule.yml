@@ -1,6 +1,7 @@
 name: Schedule Test
 
 on:
+  push:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
@@ -12,3 +13,4 @@ jobs:
     steps:
       - name: Test
         run: echo "Schedule OK"
+# test
