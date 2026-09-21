@@ -18,3 +18,4 @@ jobs:
           echo "UTC: $(date -u)"
           echo "KST: $(TZ=Asia/Seoul date)"
           echo "===================="
+#test
