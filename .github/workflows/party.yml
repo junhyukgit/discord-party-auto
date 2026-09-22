@@ -68,7 +68,7 @@ jobs:
           
           target_date = tomorrow.strftime("%Y-%m-%d")
           
-          if MODE == "production" and target_date in SKIP_DATES:
+          if target_date in SKIP_DATES:
           
               print("")
               print("================================")
