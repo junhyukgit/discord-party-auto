@@ -11,10 +11,6 @@ on:
         options:
           - test
           - production
-
-  schedule:
-    - cron: '3 12 * * *'
-
 jobs:
   send-party:
     runs-on: ubuntu-latest
