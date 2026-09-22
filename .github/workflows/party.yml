@@ -302,4 +302,4 @@ jobs:
           print("모든 작업 완료")
 
           PY
-# schedule refresh
+# schedule ref
