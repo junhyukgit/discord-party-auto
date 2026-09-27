@@ -1,0 +1,302 @@
+name: 마비노기 파티 모집 자동 게시
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '실행 모드'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+          - test
+          - production
+jobs:
+  send-party:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 파티 모집글 게시
+        env:
+          WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          MODE: ${{ inputs.mode || 'production' }}
+
+        run: |
+          python3 <<'PY'
+
+          import os
+          import subprocess
+          import json
+          from datetime import datetime, timedelta
+          from zoneinfo import ZoneInfo
+
+
+          # ==============================
+          # 기본 설정
+          # ==============================
+
+          KST = ZoneInfo("Asia/Seoul")
+
+          ROLE_ID = "1414990509373526207"
+
+          WEBHOOK_URL = os.environ["WEBHOOK_URL"]
+
+          MODE = os.environ.get("MODE", "production")
+
+          # Embed 색상
+          EMBED_COLOR = 0xF28C8C
+
+
+          # ==============================
+          # 다음 날 계산
+          # ==============================
+
+          now = datetime.now(KST)
+
+          tomorrow = now + timedelta(days=1)
+
+          # ==============================
+          # 모집글 휴무일 설정
+          # ==============================
+          
+          SKIP_DATES = [
+              "2026-09-24",
+              "2026-09-25",
+              "2026-09-26",
+              "2026-09-27"
+          ]
+          
+          target_date = tomorrow.strftime("%Y-%m-%d")
+          
+          if target_date in SKIP_DATES:
+          
+              print("")
+              print("================================")
+              print("추석 연휴 기간")
+              print("게시 대상 날짜 :", target_date)
+              print("자동 모집글을 게시하지 않습니다.")
+              print("================================")
+          
+              raise SystemExit(0)
+          
+          weekdays = [
+              "월",
+              "화",
+              "수",
+              "목",
+              "금",
+              "토",
+              "일"
+          ]
+
+          weekday = weekdays[tomorrow.weekday()]
+
+          date_text = f"{tomorrow.month}/{tomorrow.day}({weekday})"
+
+          print("현재 시간 :", now.strftime("%Y-%m-%d %H:%M:%S"))
+          print("다음 날짜 :", date_text)
+          print("실행 모드 :", MODE)
+
+
+          # ==============================
+          # 메시지 전송 함수
+          # ==============================
+
+          def send_message(title, description):
+
+              # 포럼 게시글 제목
+              thread_name = title
+
+
+              # ==============================
+              # 테스트 모드
+              # ==============================
+
+              if MODE == "test":
+
+                  thread_name = "[개발테스트] " + thread_name
+
+                  # 테스트에서는 멘션하지 않음
+                  content = ""
+
+                  embed_description = description
+
+                  allowed_mentions = {
+                      "roles": []
+                  }
+
+                  print("")
+                  print("테스트 게시:")
+                  print("포럼 제목 :", thread_name)
+                  print("내용 :", description)
+
+
+              # ==============================
+              # 실제 운영 모드
+              # ==============================
+
+              else:
+
+                  # 길드원 역할 멘션
+                  content = f"<@&{ROLE_ID}>"
+
+                  embed_description = description
+
+                  allowed_mentions = {
+                      "roles": [ROLE_ID]
+                  }
+
+
+              # ==============================
+              # Embed 생성
+              # ==============================
+              #
+              # 제목은 포럼 게시글 제목에만 표시
+              # Embed에는 내용만 표시
+              #
+
+              embed = {
+                  "description": embed_description,
+                  "color": EMBED_COLOR
+              }
+
+
+              # ==============================
+              # Discord Webhook 데이터
+              # ==============================
+
+              payload = {
+                  "content": content,
+                  "thread_name": thread_name,
+                  "embeds": [embed],
+                  "allowed_mentions": allowed_mentions
+              }
+
+              payload_json = json.dumps(
+                  payload,
+                  ensure_ascii=False
+              )
+
+
+              # ==============================
+              # curl로 Discord 전송
+              # ==============================
+
+              result = subprocess.run(
+                  [
+                      "curl",
+                      "-sS",
+                      "-w",
+                      "\nHTTP_STATUS:%{http_code}",
+                      "-X",
+                      "POST",
+                      WEBHOOK_URL,
+                      "-H",
+                      "Content-Type: application/json",
+                      "--data",
+                      payload_json
+                  ],
+                  capture_output=True,
+                  text=True
+              )
+
+
+              print("")
+              print("Discord 응답:")
+              print(result.stdout)
+
+
+              # ==============================
+              # curl 실행 오류
+              # ==============================
+
+              if result.returncode != 0:
+
+                  print("")
+                  print("curl 실행 오류:")
+                  print(result.stderr)
+
+                  raise RuntimeError(
+                      "Discord Webhook 요청에 실패했습니다."
+                  )
+
+
+              # ==============================
+              # HTTP 상태 코드 확인
+              # ==============================
+
+              response_lines = result.stdout.strip().splitlines()
+
+              status_line = response_lines[-1]
+
+              print("")
+              print("HTTP 상태 :", status_line)
+
+
+              if "HTTP_STATUS:204" in status_line:
+                  print("Discord 게시 성공")
+              
+              elif "HTTP_STATUS:200" in status_line:
+                  print("Discord 게시 성공")
+              
+              else:
+                  raise RuntimeError(
+                      "Discord가 Webhook 요청을 거부했습니다."
+                  )
+                  
+                  print("")
+                  print("Discord HTTP 오류:")
+                  print(status_line)
+
+                  raise RuntimeError(
+                      "Discord가 Webhook 요청을 거부했습니다."
+                  )
+
+
+              print("Discord 게시 성공")
+
+
+          # ==============================
+          # 월 ~ 수
+          # ==============================
+
+          if tomorrow.weekday() in [0, 1, 2]:
+
+              send_message(
+                  f"{date_text} 브리레흐 1-3관 21시",
+                  "3-5인 출발합니다."
+              )
+
+
+          # ==============================
+          # 목 ~ 일
+          # ==============================
+
+          else:
+
+              # ------------------------------
+              # 1번 모집
+              # ------------------------------
+
+              send_message(
+                  f"{date_text} 브리레흐 1-3관 21시",
+                  "3-5인 출발합니다."
+              )
+
+
+              # ------------------------------
+              # 2번 모집
+              # ------------------------------
+
+              send_message(
+                  f"{date_text} 브리레흐 1-3관 정규 후 연릴",
+                  "3-5인 출발 합니다.\n"
+                  "18:00까지 인원 미달시 취소 예정입니다."
+              )
+
+
+          print("")
+          print("모든 작업 완료")
+
+          PY
+# schedule ref
