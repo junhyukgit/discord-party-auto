@@ -267,7 +267,7 @@ jobs:
               send_message(
                   WEBHOOK_URL,
                   f"{date_text} 브리레흐 1-3관 21시",
-                  "3-5인 출발합니다."
+                  "2-4인 출발합니다."
               )
 
 
@@ -284,7 +284,7 @@ jobs:
               send_message(
                   WEBHOOK_URL,
                   f"{date_text} 브리레흐 1-3관 21시",
-                  "3-5인 출발합니다."
+                  "2-4인 출발합니다."
               )
 
 
